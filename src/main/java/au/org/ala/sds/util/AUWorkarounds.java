@@ -13,7 +13,7 @@ import java.util.Set;
 public class AUWorkarounds {
 
     public final static String COASTAL_WATERS_LAYER = "cl927";
-    public final static String LGA_BOUNDARIES_LAYER = "cl23";
+    public final static String LGA_BOUNDARIES_LAYER = "cl959";
     final static String TSPZ_LAYER = "cl937";
     final static String TSSQZ_LAYER = "cl941";
     final static String FFEZ_TRI_STATE_LAYER = "cl938";
