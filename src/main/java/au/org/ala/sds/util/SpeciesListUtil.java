@@ -17,6 +17,7 @@ package au.org.ala.sds.util;
 
 import au.org.ala.sds.model.SDSSpeciesListDTO;
 import au.org.ala.sds.model.SDSSpeciesListItemDTO;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -25,8 +26,7 @@ import org.codehaus.jackson.type.TypeReference;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Provides utility methods required to interface with the species list tool. Allows the SDS
@@ -83,21 +83,50 @@ public class SpeciesListUtil {
      * Retrieves the "isSDS" species list items ordering them by guid/scientific name
      * @return
      */
-    public static List<SDSSpeciesListItemDTO> getSDSListItems(boolean hasMatch){
+    public static List<SDSSpeciesListItemDTO> getSDSListItems(Collection<String> dataResourceUids, boolean hasMatch){
        try{
-           String suffix = hasMatch ? "&guid=isNotNull:guid&sort=guid" : "&guid=isNull:guid&sort=rawScientificName";
-           URL url = new URL(Configuration.getInstance().getListToolUrl() + "/ws/speciesListItems?isSDS=eq:true" + suffix);
-           ObjectMapper mapper = new ObjectMapper();
-           mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-           URLConnection connection = url.openConnection();
-           logger.debug("Looking up location using " + url);
-           InputStream inStream = connection.getInputStream();
+           String suffix = hasMatch ? "&sort=guid" : "&sort=rawScientificName";
+           List<SDSSpeciesListItemDTO> values = new ArrayList();
 
-           java.util.List<SDSSpeciesListItemDTO> values = mapper.readValue(
-                   inStream,
-                   new TypeReference<List<SDSSpeciesListItemDTO>>(){}
-           );
-           logger.debug(values);
+           String drUids = StringUtils.join(dataResourceUids, ",");
+           int offset = 0;
+           int max = 400;
+           boolean moreRecords = true;
+           while(moreRecords) {
+               URL url = new URL(Configuration.getInstance().getListToolUrl() + "/ws/speciesListItems?isSDS=eq:true" + suffix + "&druid=" + drUids + "&includeKVP=true&max=" + max + "&offset=" + offset);
+               offset += max;
+
+               ObjectMapper mapper = new ObjectMapper();
+               mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+               URLConnection connection = url.openConnection();
+               logger.error("Looking up location using " + url);
+               InputStream inStream = connection.getInputStream();
+
+               java.util.List<SDSSpeciesListItemDTO> drValues = mapper.readValue(
+                       inStream,
+                       new TypeReference<List<SDSSpeciesListItemDTO>>() {
+                       }
+               );
+
+               if (!hasMatch) {
+                   // include only records without an LSID
+                   for (SDSSpeciesListItemDTO item : drValues) {
+                       if (item.getGuid() == null) {
+                           values.add(item);
+                       }
+                   }
+               } else {
+                   // include only records with an LSID
+                   for (SDSSpeciesListItemDTO item : drValues) {
+                       if (item.getGuid() != null) {
+                           values.add(item);
+                       }
+                   }
+               }
+
+               moreRecords = drValues.size() == max;
+           }
+           logger.error(values);
            return values;
        } catch(Exception e){
            logger.error("Unable to get the list items. ", e);
@@ -106,8 +135,8 @@ public class SpeciesListUtil {
     }
 
     public static void main(String[] args){
-        getSDSLists();
-        getSDSListItems(true);
-        getSDSListItems(false);
+        Map<String, SDSSpeciesListDTO> sdsLists = getSDSLists();
+        getSDSListItems(sdsLists.keySet(), true);
+        getSDSListItems(sdsLists.keySet(), false);
     }
 }

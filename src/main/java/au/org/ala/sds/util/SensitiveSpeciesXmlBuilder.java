@@ -71,7 +71,7 @@ public class SensitiveSpeciesXmlBuilder {
         }
 
         //Step 1: get all of the items that have a guid
-        List<SDSSpeciesListItemDTO> guidItems = SpeciesListUtil.getSDSListItems(true);
+        List<SDSSpeciesListItemDTO> guidItems = SpeciesListUtil.getSDSListItems(sdsLists.keySet(), true);
         if(sdsLists.isEmpty() || guidItems == null || guidItems.isEmpty()) {
             return false;
         }
@@ -102,7 +102,7 @@ public class SensitiveSpeciesXmlBuilder {
                 }
                 sensitiveSpecies.setAttribute("guid", item.getGuid());
                 sensitiveSpecies.setAttribute("rank", rank);
-                String commonName = item.getKVPValue(item.commonNameLabels);
+                String commonName = item.getKVPValueCommonName();
                 sensitiveSpecies.setAttribute("commonName", commonName != null ? commonName : "");
                 doc.getRootElement().addContent(sensitiveSpecies);
                 currentGuid = item.getGuid();
@@ -121,7 +121,7 @@ public class SensitiveSpeciesXmlBuilder {
         }
 
         //Step 2: get all the items that could NOT be matched to the current species list
-        List<SDSSpeciesListItemDTO> unmatchedItems = SpeciesListUtil.getSDSListItems(false);
+        List<SDSSpeciesListItemDTO> unmatchedItems = SpeciesListUtil.getSDSListItems(sdsLists.keySet(), false);
         String currentName = "";
         sensitiveSpecies = null;
         instances = null;
@@ -143,7 +143,7 @@ public class SensitiveSpeciesXmlBuilder {
                     logger.error("Unable to get rank for " + item.getName(), e);
                 }
                 sensitiveSpecies.setAttribute("rank", rank);
-                String commonName = item.getKVPValue(item.commonNameLabels);
+                String commonName = item.getKVPValueCommonName();
                 sensitiveSpecies.setAttribute("commonName", commonName != null ? commonName : "");
                 //sensitiveSpecies.setAttribute("commonName", st.getCommonName() != null ? st.getCommonName() : "");
                 doc.getRootElement().addContent(sensitiveSpecies);
