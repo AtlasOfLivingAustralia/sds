@@ -15,6 +15,7 @@
 package au.org.ala.sds.model;
 
 import com.google.common.collect.Lists;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ public class SDSSpeciesListItemDTO {
     private String dataResourceUid;
     private List<Map<String, String>> kvpValues;
     public static final List<String> commonNameLabels= Lists.newArrayList("commonname","vernacularname");
+    private String commonName;
 
     public String getGuid() {
         return guid;
@@ -38,6 +40,19 @@ public class SDSSpeciesListItemDTO {
 
     public void setGuid(String guid) {
         this.guid = guid;
+    }
+
+    public String getCommonName() {
+        return commonName;
+    }
+
+    public void setCommonName(String commonName) {
+        this.commonName = commonName;
+    }
+
+    // Added for the change data structure returned by lists
+    public void setLsid(String lsid) {
+        this.guid = lsid;
     }
 
     public String getName() {
@@ -70,28 +85,35 @@ public class SDSSpeciesListItemDTO {
 
     public void setKvpValues(List<Map<String, String>> kvpValues) {
         this.kvpValues = kvpValues;
+
+        // family has moved to kvpValues
+        for(Map<String, String> pair: kvpValues){
+            if("family".equalsIgnoreCase(pair.get("key"))){
+                setFamily(pair.get("value"));
+            }
+        }
     }
     public String getKVPValue(String key){
         for(Map<String, String> pair: kvpValues){
-            if(key.equals(pair.get("key"))){
+            if(key.equalsIgnoreCase(pair.get("key").replaceAll("[^a-zA-Z]", ""))){
                 return pair.get("value");
             }
         }
         return null;
     }
-    public String getKVPValue(List<String> keys){
+    public String getKVPValueCommonName(){
         for(Map<String, String> pair: kvpValues){
-            if(keys.contains(pair.get("key").toLowerCase().replaceAll(" ", ""))){
+            if(commonNameLabels.contains(pair.get("key").toLowerCase().replaceAll(" ", ""))){
                 return pair.get("value");
             }
         }
-        return null;
+        return commonName;
     }
 
     @Override
     public String toString() {
         return "SDSSpeciesListItemDTO{" +
-                "guid='" + guid + '\'' +
+                "lsid='" + guid + '\'' +
                 ", name='" + name + '\'' +
                 ", dataResourceUid='" + dataResourceUid + '\'' +
                 ", kvpValues=" + kvpValues +
