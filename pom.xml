@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>au.org.ala</groupId>
     <artifactId>sds</artifactId>
-    <version>1.4.8-SNAPSHOT</version>
+    <version>1.4.9-SNAPSHOT</version>
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/AtlasOfLivingAustralia/sds/issues</url>
@@ -56,7 +56,7 @@
         <dependency>
             <groupId>au.org.ala</groupId>
             <artifactId>ala-name-matching-search</artifactId>
-            <version>4.2</version>
+            <version>4.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
