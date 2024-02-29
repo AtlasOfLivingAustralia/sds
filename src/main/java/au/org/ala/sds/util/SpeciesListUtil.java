@@ -26,6 +26,7 @@ import org.codehaus.jackson.type.TypeReference;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -44,7 +45,12 @@ public class SpeciesListUtil {
         try {
             logger.info("Loading lists from " + Configuration.getInstance().getListToolUrl());
             //get the details about the species lists that are considered part of the SDS
-            URL url = new URL(Configuration.getInstance().getListToolUrl() + "/ws/speciesList?isSDS=eq:true");
+            URL url;
+            if (Configuration.getInstance().getListToolVersion() == 2) {
+                url = new URL(Configuration.getInstance().getListToolUrl() + "/speciesList/?isSDS=true&isAuthoritative=true&pageSize=1000");
+            } else {
+                url = new URL(Configuration.getInstance().getListToolUrl() + "/ws/speciesList?isSDS=eq:true");
+            }
             //retrieve the lists from the json returned
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -55,19 +61,21 @@ public class SpeciesListUtil {
             if(values.containsKey("lists")){
                List<Map<String, String>> lists = (List<Map<String, String>>) values.get("lists");
                for (Map<String, String> lmap : lists){
-                   String dataResourceUid = lmap.get("dataResourceUid");
-                   SDSSpeciesListDTO item = new SDSSpeciesListDTO(
-                           dataResourceUid,
-                           lmap.get("listName"),
-                           lmap.get("region"),
-                           lmap.get("authority"),
-                           lmap.get("category"),
-                           lmap.get("generalisation"),
-                           lmap.get("sdsType"),
-                           lmap.get("lastUpdated")
-                   );
-                   logger.debug(item);
-                   map.put(dataResourceUid, item);
+                   String dataResourceUid = lmap.getOrDefault("id", lmap.get("dataResourceUid"));
+//                   if ("65d2a740ac5fc44c91cce89d".equals(dataResourceUid)) {
+                       SDSSpeciesListDTO item = new SDSSpeciesListDTO(
+                               dataResourceUid,
+                               lmap.getOrDefault("title", lmap.get("listName")),
+                               lmap.get("region"),
+                               lmap.get("authority"),
+                               lmap.get("category"),
+                               lmap.get("generalisation"),
+                               lmap.getOrDefault("sdsType", "CONSERVATION"),
+                               formatDate(lmap.get("lastUpdated"))
+                       );
+                       logger.debug(item);
+                       map.put(dataResourceUid, item);
+//                   }
                }
                logger.debug(lists + " " + lists.getClass() + " " + lists.get(0).getClass());
             }
@@ -88,45 +96,107 @@ public class SpeciesListUtil {
            String suffix = hasMatch ? "&sort=guid" : "&sort=rawScientificName";
            List<SDSSpeciesListItemDTO> values = new ArrayList();
 
-           String drUids = StringUtils.join(dataResourceUids, ",");
-           int offset = 0;
-           int max = 400;
-           boolean moreRecords = true;
-           while(moreRecords) {
-               URL url = new URL(Configuration.getInstance().getListToolUrl() + "/ws/speciesListItems?isSDS=eq:true" + suffix + "&druid=" + drUids + "&includeKVP=true&max=" + max + "&offset=" + offset);
-               offset += max;
+           for (String id : dataResourceUids) {
+               int offset = 0;
+               int max = 10000;
+               int page = 1;
+               boolean moreRecords = true;
+               while (moreRecords) {
+                   URL url;
+                   if (Configuration.getInstance().getListToolVersion() == 2) {
+                       url = new URL(Configuration.getInstance().getListToolUrl() + "/speciesListItems/" + id + "?pageSize=" + max + "&page=" + page);
+                       page++;
+                   } else {
+                       url = new URL(Configuration.getInstance().getListToolUrl() + "/ws/speciesListItems?isSDS=eq:true" + suffix + "&druid=" + id + "&includeKVP=true&max=" + max + "&offset=" + offset);
+                   }
+                   offset += max;
 
-               ObjectMapper mapper = new ObjectMapper();
-               mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-               URLConnection connection = url.openConnection();
-               logger.error("Looking up location using " + url);
-               InputStream inStream = connection.getInputStream();
+                   ObjectMapper mapper = new ObjectMapper();
+                   mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                   URLConnection connection = url.openConnection();
 
-               java.util.List<SDSSpeciesListItemDTO> drValues = mapper.readValue(
-                       inStream,
-                       new TypeReference<List<SDSSpeciesListItemDTO>>() {
-                       }
-               );
+                   InputStream inStream = connection.getInputStream();
 
-               if (!hasMatch) {
-                   // include only records without an LSID
-                   for (SDSSpeciesListItemDTO item : drValues) {
-                       if (item.getGuid() == null) {
-                           values.add(item);
+                   java.util.List<SDSSpeciesListItemDTO> drValues = mapper.readValue(
+                           inStream,
+                           new TypeReference<List<SDSSpeciesListItemDTO>>() {
+                           }
+                   );
+
+                   // additional work to make v2 response compatible with v1
+                   if (Configuration.getInstance().getListToolVersion() == 2) {
+                       for (SDSSpeciesListItemDTO item : drValues) {
+                           if (item.getClassification() != null && item.getClassification().get("taxonConceptID") != null) {
+                               item.setGuid(item.getClassification().get("taxonConceptID").toString());
+                           }
+                           if (item.getClassification() != null && item.getClassification().get("vernacularName") != null) {
+                               item.setCommonName(item.getClassification().get("vernacularName").toString());
+                           }
+                           // This change (matched family instead of uploaded family) should impact nothing as it is already
+                           // an issue if the uploaded family is not the same as the matched family. This is a problem,
+                           // for different reasons, in both the old and new lists.
+                           if (item.getClassification() != null && item.getClassification().get("family") != null) {
+                               item.setFamily(item.getClassification().get("family").toString());
+                           }
+                           item.setDataResourceUid(id);
                        }
                    }
-               } else {
-                   // include only records with an LSID
-                   for (SDSSpeciesListItemDTO item : drValues) {
-                       if (item.getGuid() != null) {
-                           values.add(item);
+
+                   if (!hasMatch) {
+                       // include only records without an LSID
+                       for (SDSSpeciesListItemDTO item : drValues) {
+                           if (item.getGuid() == null) {
+                               values.add(item);
+                           }
+                       }
+                   } else {
+                       // include only records with an LSID
+                       for (SDSSpeciesListItemDTO item : drValues) {
+                           if (item.getGuid() != null) {
+                               values.add(item);
+                           }
                        }
                    }
+
+                   moreRecords = drValues.size() == max;
                }
-
-               moreRecords = drValues.size() == max;
            }
-           logger.error(values);
+
+           // manually sort for listToolVersion==2
+           if (Configuration.getInstance().getListToolVersion() == 2) {
+               if (hasMatch) {
+                   values.sort(new Comparator<SDSSpeciesListItemDTO>() {
+                       @Override
+                       public int compare(SDSSpeciesListItemDTO o1, SDSSpeciesListItemDTO o2) {
+                           if (o1.getGuid() == null && o2.getGuid() == null) {
+                               return 0;
+                           } else if (o1.getGuid() == null) {
+                               return -1;
+                           } else if (o2.getGuid() == null) {
+                               return 1;
+                           } else {
+                               return o1.getGuid().compareTo(o2.getGuid());
+                           }
+                       }
+                   });
+               } else {
+                   values.sort(new Comparator<SDSSpeciesListItemDTO>() {
+                       @Override
+                       public int compare(SDSSpeciesListItemDTO o1, SDSSpeciesListItemDTO o2) {
+                           if (o1.getName() == null && o2.getName() == null) {
+                               return 0;
+                           } else if (o1.getName() == null) {
+                               return -1;
+                           } else if (o2.getName() == null) {
+                               return 1;
+                           } else {
+                               return o1.getName().compareTo(o2.getName());
+                           }
+                       }
+                   });
+               }
+           }
+
            return values;
        } catch(Exception e){
            logger.error("Unable to get the list items. ", e);
@@ -134,9 +204,11 @@ public class SpeciesListUtil {
         return null;
     }
 
-    public static void main(String[] args){
-        Map<String, SDSSpeciesListDTO> sdsLists = getSDSLists();
-        getSDSListItems(sdsLists.keySet(), true);
-        getSDSListItems(sdsLists.keySet(), false);
+    private static String formatDate(Object date) {
+        if (date instanceof Long) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            return sdf.format(date);
+        }
+        return date.toString();
     }
 }

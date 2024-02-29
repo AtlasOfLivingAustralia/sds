@@ -197,6 +197,9 @@ public class SensitiveSpeciesXmlBuilder {
             if(generalisation == null) {
                 generalisation = list.getGeneralisation();
             }
+            if(generalisation == null) {
+                generalisation = "10km";
+            }
             instance.setAttribute("generalisation", generalisation);
         } else  {
             String fromDate = item.getKVPValue("fromDate");

@@ -15,7 +15,6 @@
 package au.org.ala.sds.model;
 
 import com.google.common.collect.Lists;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,7 @@ public class SDSSpeciesListItemDTO {
     private String family;
     private String dataResourceUid;
     private List<Map<String, String>> kvpValues;
+    private Map<String, Object> classification;
     public static final List<String> commonNameLabels= Lists.newArrayList("commonname","vernacularname");
     private String commonName;
 
@@ -49,6 +49,10 @@ public class SDSSpeciesListItemDTO {
     public void setCommonName(String commonName) {
         this.commonName = commonName;
     }
+    // alias of commonName
+    public void setVernacularName(String vernacularName) {
+        this.commonName = vernacularName;
+    }
 
     // Added for the change data structure returned by lists
     public void setLsid(String lsid) {
@@ -61,6 +65,13 @@ public class SDSSpeciesListItemDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+    // alias of name
+    public void setScientificName(String scientificName) {
+        // prevent overwriting name when list.tool.version == 1
+        if (this.name == null) {
+            this.name = scientificName;
+        }
     }
 
     public String getDataResourceUid() {
@@ -93,6 +104,10 @@ public class SDSSpeciesListItemDTO {
             }
         }
     }
+    // alias of kvpValues
+    public void setProperties(List<Map<String, String>> properties) {
+        setKvpValues(properties);
+    }
     public String getKVPValue(String key){
         for(Map<String, String> pair: kvpValues){
             if(key.equalsIgnoreCase(pair.get("key").replaceAll("[^a-zA-Z]", ""))){
@@ -108,6 +123,13 @@ public class SDSSpeciesListItemDTO {
             }
         }
         return commonName;
+    }
+
+    public Map<String, Object> getClassification() {
+        return classification;
+    }
+    public void setClassification(Map<String, Object> classification) {
+        this.classification = classification;
     }
 
     @Override

@@ -128,11 +128,15 @@ public class Configuration {
     }
 
     public String getNameMatchingIndex() {
-        return config.getProperty("name.index.dir", "/data/lucene/namematching");
+        return config.getProperty("name.index.dir", "/data/lucene/namematching-20230725-5");
     }
 
     public String getListToolUrl(){
         return config.getProperty("list.tool.url", "https://lists.ala.org.au");
+    }
+
+    public Integer getListToolVersion(){
+        return Integer.parseInt(config.getProperty("list.tool.version", "1"));
     }
 
     public List<String> getGeospatialLayers() {
