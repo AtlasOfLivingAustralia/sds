@@ -30,6 +30,7 @@ public class SDSSpeciesListItemDTO {
     private String name;
     private String family;
     private String dataResourceUid;
+    private String rank;
     private List<Map<String, String>> kvpValues;
     public static final List<String> commonNameLabels= Lists.newArrayList("commonname","vernacularname");
     private String commonName;
@@ -83,13 +84,20 @@ public class SDSSpeciesListItemDTO {
         this.family = family;
     }
 
+    public String getRank() {return rank;}
+    public void setRank(String rank) {this.rank = rank; }
+
     public void setKvpValues(List<Map<String, String>> kvpValues) {
         this.kvpValues = kvpValues;
 
         // family has moved to kvpValues
+        // rank added to list for better matching
         for(Map<String, String> pair: kvpValues){
             if("family".equalsIgnoreCase(pair.get("key"))){
                 setFamily(pair.get("value"));
+            }
+            if("taxonRank".equalsIgnoreCase(pair.get("key"))){
+                setRank(pair.get("value"));
             }
         }
     }
