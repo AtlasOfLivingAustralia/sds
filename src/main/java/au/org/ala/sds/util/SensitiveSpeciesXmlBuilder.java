@@ -92,7 +92,7 @@ public class SensitiveSpeciesXmlBuilder {
                 sensitiveSpecies.setAttribute("name", item.getName());
                 sensitiveSpecies.setAttribute("family", item.getFamily() != null ? item.getFamily() : "");
                 String rank = Rank.UNRANKED.toString().toUpperCase();
-                //check if there's a value for rank otherwise try and infer it
+                //check if there's a value for rank otherwise try and infer it - Issue #31
                 if (item.getRank() != null){
                     rank = item.getRank().toUpperCase();
                 } else {
