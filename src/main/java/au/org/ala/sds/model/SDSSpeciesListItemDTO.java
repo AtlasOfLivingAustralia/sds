@@ -93,7 +93,6 @@ public class SDSSpeciesListItemDTO {
         this.kvpValues = kvpValues;
 
         // family has moved to kvpValues
-        // rank added to list for better matching
         for(Map<String, String> pair: kvpValues){
             if("family".equalsIgnoreCase(pair.get("key"))){
                 setFamily(pair.get("value"));
