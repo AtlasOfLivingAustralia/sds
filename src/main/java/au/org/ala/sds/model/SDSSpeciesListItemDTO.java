@@ -30,6 +30,7 @@ public class SDSSpeciesListItemDTO {
     private String name;
     private String family;
     private String dataResourceUid;
+    private String rank;
     private List<Map<String, String>> kvpValues;
     public static final List<String> commonNameLabels= Lists.newArrayList("commonname","vernacularname");
     private String commonName;
@@ -83,6 +84,11 @@ public class SDSSpeciesListItemDTO {
         this.family = family;
     }
 
+    //Issue #31- https://github.com/AtlasOfLivingAustralia/sds/issues/31
+    // Adds ability to specify taxon rank explicitly via taxonRank column in Source
+    public String getRank() {return rank;}
+    public void setRank(String rank) {this.rank = rank; }
+
     public void setKvpValues(List<Map<String, String>> kvpValues) {
         this.kvpValues = kvpValues;
 
@@ -90,6 +96,11 @@ public class SDSSpeciesListItemDTO {
         for(Map<String, String> pair: kvpValues){
             if("family".equalsIgnoreCase(pair.get("key"))){
                 setFamily(pair.get("value"));
+            }
+            // Issue #31 - https://github.com/AtlasOfLivingAustralia/sds/issues/31
+            // Adds ability to specify taxon rank explicitly via taxonRank column in Source
+            if("taxonRank".equalsIgnoreCase(pair.get("key"))){
+                setRank(pair.get("value"));
             }
         }
     }
