@@ -82,7 +82,7 @@ public class SensitiveSpeciesXmlBuilder {
         Element instances = null;
 
         for(SDSSpeciesListItemDTO item : guidItems){
-            //if it si a new guid add a new sensitive species
+            //if it is a new guid add a new sensitive species
             if(!currentGuid.equals(item.getGuid())){
                 if(instances != null){
                     sensitiveSpecies.addContent(instances);
@@ -92,14 +92,22 @@ public class SensitiveSpeciesXmlBuilder {
                 sensitiveSpecies.setAttribute("name", item.getName());
                 sensitiveSpecies.setAttribute("family", item.getFamily() != null ? item.getFamily() : "");
                 String rank = Rank.UNRANKED.toString().toUpperCase();
-                try {
-                    ParsedName pn = parser.parse(item.getName());
-                    if(pn != null && pn.getRank() != null) {
-                        rank = pn.getRank().toString().toUpperCase();
+                //check if there's a supplied value for taxon rank otherwise try and infer it -
+                // Issue #31 - https://github.com/AtlasOfLivingAustralia/sds/issues/31
+                if (item.getRank() != null) {
+                    rank = item.getRank().toUpperCase();
+                } else {
+                    try {
+                        ParsedName pn = parser.parse(item.getName());
+                        if(pn != null && pn.getRank() != null) {
+                            rank = pn.getRank().toString().toUpperCase();
+                        }
+                    } catch(Exception e){
+                        logger.error("Unable to get rank for " + item.getName(), e);
                     }
-                } catch(Exception e){
-                    logger.error("Unable to get rank for " + item.getName(), e);
                 }
+
+
                 sensitiveSpecies.setAttribute("guid", item.getGuid());
                 sensitiveSpecies.setAttribute("rank", rank);
                 String commonName = item.getKVPValueCommonName();
@@ -137,10 +145,16 @@ public class SensitiveSpeciesXmlBuilder {
                 sensitiveSpecies.setAttribute("name", item.getName());
                 sensitiveSpecies.setAttribute("family", item.getFamily() != null ? item.getFamily() : "");
                 String rank = Rank.UNRANKED.toString().toUpperCase();
-                try{
-                    rank = parser.parse(item.getName()).getRank().toString().toUpperCase();
-                } catch(Exception e){
-                    logger.error("Unable to get rank for " + item.getName(), e);
+                // check if there's a supplied value for taxon rank otherwise try and infer it -
+                // Issue #31 - https://github.com/AtlasOfLivingAustralia/sds/issues/31
+                if (item.getRank() != null) {
+                    rank = item.getRank().toUpperCase();
+                } else {
+                    try {
+                        rank = parser.parse(item.getName()).getRank().toString().toUpperCase();
+                    } catch (Exception e) {
+                        logger.error("Unable to get rank for " + item.getName(), e);
+                    }
                 }
                 sensitiveSpecies.setAttribute("rank", rank);
                 String commonName = item.getKVPValueCommonName();

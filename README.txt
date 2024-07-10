@@ -29,6 +29,8 @@ WITHHOLD, 10km, 1km, 100m.  If this is supplied at the list level it will apply 
 
 SDS Type - either PLANT_PEST or CONSERVATION.
 
+Taxon Rank - the rank of the entry can be specified in the taxonRank column in the list.
+
 === SENSITIVE SPECIES XML GENERATION ===
 This is performed automatically by the sds-webapp2, it checks the list tool regularly to see if it needs to update the list.
 It uses au.org.ala.sds.util.SensitiveSpeciesXmlBuilder#generateFromWebservices

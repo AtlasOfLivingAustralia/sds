@@ -109,8 +109,8 @@ public class PlantPestEradicatedTest {
         assertTrue(outcome.isLoadable());
         assertTrue(outcome.isControlledAccess());
         //test for the correct messages
-        assertEquals(MessageFactory.getMessageText(MessageFactory.PLANT_PEST_MSG_CAT2_B1, "Xanthomonas citri (ex Hasse 1915) Gabriel et al. subsp. citri 2007","Emerald"),outcome.getReport().getAssertion());
-        assertEquals("Your record Xanthomonas citri (ex Hasse 1915) Gabriel et al. subsp. citri 2007,2004-01-29 and Emerald has been forwarded to a secure view with the Atlas of Living Australia.\n" +
+        assertEquals(MessageFactory.getMessageText(MessageFactory.PLANT_PEST_MSG_CAT2_B1, "Xanthomonas citri subsp. citri","Emerald"),outcome.getReport().getAssertion());
+        assertEquals("Your record Xanthomonas citri subsp. citri,2004-01-29 and Emerald has been forwarded to a secure view with the Atlas of Living Australia.\n" +
                 "This record has been determined to have plant biosecurity sensitivity because the record is an earlier collection of a pest believed eradicated from Emerald and therefore Australia.\n" +
                 "Please note the following:\n" +
                 "1) Diagnostic keys and guidance on other tools for identifying many exotic plant pests, particularly those considered Emergency Plant Pests under the EPPRD, are becoming readily available through the Plant Biosecurity Toolbox and Biosecurity Bank developed by the CRC for Plant Biosecurity.\n" +
@@ -199,6 +199,6 @@ public class PlantPestEradicatedTest {
         assertTrue(outcome.isControlledAccess());
         // Current version of SDS does not include plant pest status and name index does not contain name
         assertTrue(outcome.getReport().getMessages().get(0).getMessageText().contains("and Emerald has been forwarded to a secure view with the Atlas of Living Australia"));
-        assertEquals(MessageFactory.getMessageText(MessageFactory.PLANT_PEST_MSG_CAT2_A1, "Xanthomonas citri (ex Hasse 1915) Gabriel et al. subsp. citri 2007"),outcome.getReport().getAssertion());
+        assertEquals(MessageFactory.getMessageText(MessageFactory.PLANT_PEST_MSG_CAT2_A1, "Xanthomonas citri subsp. citri"),outcome.getReport().getAssertion());
     }
 }
