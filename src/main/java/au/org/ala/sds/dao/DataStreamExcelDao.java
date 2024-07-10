@@ -84,11 +84,11 @@ public class DataStreamExcelDao implements DataStreamDao {
                     Cell cell = row.getCell(columnMap.get(key));
                     if (cell != null) {
                         switch (cell.getCellType()) {
-                            case Cell.CELL_TYPE_STRING:
+                            case STRING:
                                 facts.put(key, cell.getStringCellValue().trim());
                                 break;
-                            case Cell.CELL_TYPE_NUMERIC:
-                            case Cell.CELL_TYPE_FORMULA:
+                            case NUMERIC:
+                            case FORMULA:
                                 double d = cell.getNumericCellValue();
                                 try {
                                     if (HSSFDateUtil.isCellDateFormatted(cell)) {
