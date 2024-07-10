@@ -41,7 +41,7 @@ public class GeoLocationTest {
         assertTrue(GeoLocationHelper.getZonesContainingPoint("-35.276771", "149.112539").contains(SensitivityZoneFactory.getZone(SensitivityZone.ACT)));
         assertTrue(GeoLocationHelper.getZonesContainingPoint("-35.140266", "150.698433").contains(SensitivityZoneFactory.getZone(SensitivityZone.ACT)));
         assertTrue(GeoLocationHelper.getZonesContainingPoint("-11.268428", "132.14653").contains(SensitivityZoneFactory.getZone(SensitivityZone.NT)));
-        assertTrue(GeoLocationHelper.getZonesContainingPoint("-41.538137", "173.968817").contains(SensitivityZoneFactory.getZone(SensitivityZone.NOTAUS)));
+        assertTrue(GeoLocationHelper.getZonesContainingPoint("-41.538137", "173.968817").contains(SensitivityZoneFactory.getZone(SensitivityZone.NOT_ATLAS_COUNTRY_CODE)));
 
         // Cairns
         Set<SensitivityZone> ref = new HashSet<SensitivityZone>();
