@@ -1,5 +1,4 @@
-# sds   [![Build Status](https://travis-ci.com/AtlasOfLivingAustralia/sds.svg?branch=master)](https://app.travis-ci.com/github/AtlasOfLivingAustralia/sds)
-
+# sds   [![Build Status](https://app.travis-ci.com/AtlasOfLivingAustralia/sds.svg?token=Zh3ARTCn8eknsavTcJfG&branch=master)](https://app.travis-ci.com/AtlasOfLivingAustralia/sds)
 
 The sensitive data service manages sensitivity concerns in the conservation and biosecurity areas.
 
