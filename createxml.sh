@@ -11,18 +11,15 @@ debug=0
 cd target
 
 # These two lines are used to find the most recent version jar files (by filename sort) in target dir (with and without assembly)
-jar_file=$(find . -maxdepth 1 -type f -regex '\./sds.*\.jar' | sort | grep -v 'assembly' | head -n 1) 
-assembly_file=$(find . -maxdepth 1 -type f -regex '\./sds.*\.jar' | sort | grep 'assembly' | head -n 1)
+shaded_jar_file=$(find . -maxdepth 1 -type f -regex '\./sds.*\-shaded.jar' | sort | grep -v 'assembly' | head -n 1)
 
-if [ -z "$assembly_file" ] && [ -z "$jar_file" ]; then
+if [ -z "shaded_jar_file" ]; then
   echo "No file matching the pattern was found."
 elif [ $debug -eq 1 ]; then
-  echo "File found: $jar_file"
-  echo "File found: $assembly_file"
+  echo "File found: $shaded_jar_file"
 else
   # Create the lib directory and run the SensitiveSpeciesXmlBuilder "main" class
-  jar xf $assembly_file lib lib 
-  java -Xmx2g -Xms2g -classpath "${jar_file}:lib/*" au.org.ala.sds.util.SensitiveSpeciesXmlBuilder # > sensitive-species-data.xml
+  java -Xmx2g -Xms2g -classpath ${shaded_jar_file} au.org.ala.sds.util.SensitiveSpeciesXmlBuilder > sensitive-species-data.xml
 fi
 
 cd ..
