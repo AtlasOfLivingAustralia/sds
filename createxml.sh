@@ -10,7 +10,7 @@
 debug=0
 cd target
 
-# This line is used to find the most recent version jar files (by filename sort) in target dir
+# This line is used to find the most recent version shaded jar file in the target dir
 shaded_jar_file=$(find . -maxdepth 1 -type f -regex '\./sds.*\-shaded.jar' | sort | grep -v 'assembly' | head -n 1)
 
 if [ -z "$shaded_jar_file" ]; then
