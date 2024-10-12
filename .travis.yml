@@ -6,8 +6,6 @@ branches:
   only:
   - master
   - develop
-  # Temporarily allow this branch to be built (revert before merging)
-  - 64-automate-the-build-and-deployment-of-sensitive-species-dataxml
 before_install:
 - mkdir -p ~/.m2; wget -q -O ~/.m2/settings.xml https://raw.githubusercontent.com/AtlasOfLivingAustralia/travis-build-configuration/master/travis_maven_settings.xml
 - sudo mkdir -p /data/lucene; sudo wget -O /data/lucene/namematching-20230725-5.tgz https://archives.ala.org.au/archives/nameindexes/20230725-5/namematching-20230725-5.tgz
