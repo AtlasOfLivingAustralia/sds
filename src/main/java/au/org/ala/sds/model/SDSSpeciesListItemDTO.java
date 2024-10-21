@@ -102,6 +102,12 @@ public class SDSSpeciesListItemDTO {
             if("taxonRank".equalsIgnoreCase(pair.get("key"))){
                 setRank(pair.get("value"));
             }
+            // Issue #70 - https://github.com/AtlasOfLivingAustralia/sds/issues/70
+            // Checks if list is setting rank via rank column in source
+            if("rank".equalsIgnoreCase(pair.get("key"))){
+                setRank(pair.get("value"));
+            }
+
         }
     }
     public String getKVPValue(String key){
